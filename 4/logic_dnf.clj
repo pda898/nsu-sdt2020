@@ -5,21 +5,21 @@
 (declare convert-to-basis)
 
 (def convert_rules
-    (list 
+    (atom (list 
         ;constant and variables are the same
         [(fn [expr] (constant? expr)) (fn [expr] expr)]
         [(fn [expr] (variable? expr)) (fn [expr] expr)]
         ;logic operationss from basis just pass conversion into it
         [(fn [expr] (lneg? expr)) (fn [expr] (lneg (convert-to-basis (rest expr))))]
         [(fn [expr] (lor? expr)) (fn [expr] (apply lor (map #(convert-to-basis %) (rest expr))))]
-        [(fn [expr] (land? expr)) (fn [expr] (apply land (map #(convert-to-basis %) (rest expr))))]))
+        [(fn [expr] (land? expr)) (fn [expr] (apply land (map #(convert-to-basis %) (rest expr))))])))
 
 (defn convert-to-basis [expr]
     ((some (fn [rule] 
                 (if ((first rule) expr)
                     (second rule)
                     false))
-            convert_rules) expr))
+            @convert_rules) expr))
             
 (defn pass-negation [expr]
     (if (baseop? expr)
@@ -62,9 +62,9 @@
             :else expr))
 
 ;(def example (lneg (lor (lor (lneg (variable :x)) (variable :y)) (lneg (lor (lneg (variable :y)) (variable :z))))))
-(defn convert-to-dnf [expr]
+(defn convert-to-dnf 
     "convert expression expr to DNF"
-    (->> expr
+    [expr] (->> expr
         ;step 1 - remove everything not from basis
         (convert-to-basis)
         ;step 2 - pass negation to the variables, also step 3 - remove double negations

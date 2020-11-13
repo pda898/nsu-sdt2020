@@ -26,7 +26,7 @@
             (lneg res))))
 
 (def calc_func
-    (list 
+    (atom (list 
         ;constant stays the same
         [(fn [expr vr newvr] (constant? expr)) (fn [expr vr newvr] expr)]
         ;if variable is vr - replace with new variable (or expression)
@@ -36,14 +36,14 @@
         ;logic operationss from basis
         [(fn [expr vr newvr] (lneg? expr)) neg_calc]
         [(fn [expr vr newvr] (lor? expr)) or_calc]
-        [(fn [expr vr newvr] (land? expr)) and_calc]))
+        [(fn [expr vr newvr] (land? expr)) and_calc])))
 
-(defn calculate [expr vr newvr]
-    "replace variable vr with expression newvr in expression expr and simplify where possible"
-    ((some 
+(defn calculate 
+     "replace variable vr with expression newvr in expression expr and simplify where possible"
+     [expr vr newvr] ((some 
         (fn [rule] 
             (if ((first rule) expr vr newvr)
                 (second rule)
                 false))
-        calc_func)
+        @calc_func)
         expr vr newvr))
